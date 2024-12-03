@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
+import static java.util.stream.Collectors.*;
 import java.util.stream.Stream;
 
 /**
@@ -31,42 +32,55 @@ public final class MusicGroupImpl implements MusicGroup {
 
     @Override
     public Stream<String> orderedSongNames() {
-        return null;
+        return songs.stream().map(Song::getSongName).sorted();
     }
 
     @Override
     public Stream<String> albumNames() {
-        return null;
+        return albums.keySet().stream();
     }
 
     @Override
     public Stream<String> albumInYear(final int year) {
-        return null;
+        return albums.entrySet().stream().filter(i -> i.getValue().equals(year)).map(Map.Entry::getKey);
     }
 
     @Override
     public int countSongs(final String albumName) {
-        return -1;
+        return (int) songs.stream().filter(i -> i.getAlbumName().
+        filter(it -> it.equals(albumName)).isPresent())
+        .count();
     }
 
     @Override
     public int countSongsInNoAlbum() {
-        return -1;
+        return (int) songs.stream().
+            filter(i -> i.getAlbumName().isEmpty())
+            .count();
     }
 
     @Override
     public OptionalDouble averageDurationOfSongs(final String albumName) {
-        return null;
+        return songs.stream()
+            .filter(i -> i.getAlbumName().equals(Optional.of(albumName)))
+            .mapToDouble(Song::getDuration)
+            .average();
     }
 
     @Override
     public Optional<String> longestSong() {
-        return null;
+        return songs.stream().max((i, j) -> Double.compare(i.duration, j.duration))
+            .map(Song::getSongName);
     }
 
     @Override
     public Optional<String> longestAlbum() {
-        return null;
+        return songs.stream()
+            .collect(groupingBy(i -> i.getAlbumName(), summingDouble(Song::getDuration)))
+            .entrySet()
+            .stream()
+            .max((i,j) -> Double.compare(i.getValue(), j.getValue()))
+            .flatMap(Map.Entry::getKey);
     }
 
     private static final class Song {
