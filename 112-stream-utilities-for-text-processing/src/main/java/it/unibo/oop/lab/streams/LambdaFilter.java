@@ -1,5 +1,4 @@
 package it.unibo.oop.lab.streams;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -8,13 +7,15 @@ import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.util.Arrays;
 import java.util.function.Function;
-
+import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import static java.util.stream.Collectors.*;
+
 
 /**
  * Modify this small program adding new filters.
@@ -48,8 +49,14 @@ public final class LambdaFilter extends JFrame {
             .sorted(String::compareTo)
             .reduce((a,b) -> a + " " + b).get()
             ),
-        PEREACHWORDCOUNT("A counter per each word", s ->  s.lines()
-            .flatMap(i -> Arrays.stream(i.split(" "))).collect(null) 
+        PEREACHWORDCOUNT("A counter per each word", (s) -> s.lines()
+            .flatMap(i -> Arrays.stream(i.split(" ")))
+            .collect(groupingBy(Function.identity(), Collectors.counting()))
+            .entrySet().stream().collect(
+                    () -> new StringBuilder(),
+                    (h,j) -> h.append(j.getKey()).append("->").append(j.getValue()).append(" "),
+                    (h, h2) -> h.append(" ").append(h2).append(" ")
+            ).toString()
             );
         /**
          * 
