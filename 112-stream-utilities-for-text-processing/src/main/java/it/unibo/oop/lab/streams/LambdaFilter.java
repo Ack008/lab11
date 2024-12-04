@@ -1,4 +1,5 @@
 package it.unibo.oop.lab.streams;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -6,15 +7,19 @@ import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import static java.util.stream.Collectors.*;
+
+import static java.util.stream.Collectors.groupingBy;
+
 
 
 /**
@@ -41,21 +46,21 @@ public final class LambdaFilter extends JFrame {
          * Commands.
          */
         IDENTITY("No modifications", Function.identity()),
-        LOWCASES("convert in lower-case", s -> s.toLowerCase()),
+        LOWCASES("convert in lower-case", s -> s.toLowerCase(Locale.ROOT)),
         COUNTCHARS("Count the number of characters", s -> Integer.toString(s.length())),
         COUNTLINES("Count the number of lines", s -> Long.toString(s.lines().count())),
         SORTWORDS("List all the words in alphabeetical order", s -> s.lines()
             .flatMap(i -> Arrays.stream(i.split(" ")))
             .sorted(String::compareTo)
-            .reduce((a,b) -> a + " " + b).get()
-            ),
+            .reduce((a, b) -> a + " " + b).orElse(" ")
+            ), 
         PEREACHWORDCOUNT("A counter per each word", (s) -> s.lines()
             .flatMap(i -> Arrays.stream(i.split(" ")))
             .collect(groupingBy(Function.identity(), Collectors.counting()))
             .entrySet().stream().collect(
                     () -> new StringBuilder(),
-                    (h,j) -> h.append(j.getKey()).append("->").append(j.getValue()).append(" "),
-                    (h, h2) -> h.append(" ").append(h2).append(" ")
+                    (h, j) -> h.append(j.getKey()).append("->").append(Long.toString(j.getValue())).append(' '), 
+                    (h, h2) -> h.append(' ').append(h2).append(' ')
             ).toString()
             );
         /**
@@ -78,7 +83,7 @@ public final class LambdaFilter extends JFrame {
             return fun.apply(s);
         }
     }
-
+    @SuppressWarnings("PMD")
     private LambdaFilter() {
         super("Lambda filter GUI");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
